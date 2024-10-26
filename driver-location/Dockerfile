@@ -11,9 +11,6 @@ RUN go mod download
 # Copy the source code
 COPY . .
 
-# Copy the .env file into the container
-COPY .env ./
-
 # Install godotenv for loading environment variables
 RUN go get github.com/joho/godotenv
 # Build the application as a statically linked binary

@@ -1,29 +1,21 @@
 package main
 
 import (
-	controllers "driver-location-match/contollers"
-	"driver-location-match/database"
-	"driver-location-match/services"
-	"github.com/gorilla/mux"
 	"log"
+	controllers "match-service/contollers"
+	"match-service/middleware"
 	"net/http"
 )
 
 func main() {
 
-	db, err := database.Connect("mongodb://localhost:27017", "driver_location", "drivers")
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+	// Set up the router
+	http.HandleFunc("/match/nearest", middleware.AuthMiddleware(controllers.GetNearestDriver))
+
+	// Start the server
+	port := "8082" // Set your port in the .env file
+	log.Printf("Match service running on port %s", port)
+	if err := http.ListenAndServe(":"+port, nil); err != nil {
+		log.Fatal(err)
 	}
-
-	matchingService := services.NewMatchingService(db.Database())
-	matchingController := controllers.NewMatchingController(matchingService)
-
-	r := mux.NewRouter()
-	//r.Use(middleware.AuthMiddleware)
-	r.HandleFunc("/drivers/nearby", matchingController.FindNearestDrivers).Methods("GET")
-
-	port := "8081"
-	log.Printf("Starting server on port %s...", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
 }

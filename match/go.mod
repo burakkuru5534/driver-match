@@ -1,11 +1,10 @@
-module driver-location-match
+module match-service
 
 go 1.23.2
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.0
-	github.com/gorilla/mux v1.8.1
-	github.com/joho/godotenv v1.5.1
 	github.com/sony/gobreaker v1.0.0
 	go.mongodb.org/mongo-driver v1.17.1
 )

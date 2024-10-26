@@ -2,31 +2,26 @@ package middleware
 
 import (
 	"context"
+	"match-service/utils"
 	"net/http"
-	"strings"
-
-	"github.com/golang-jwt/jwt/v4"
 )
 
-func AuthMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authHeader := r.Header.Get("Authorization")
-		if authHeader == "" {
-			http.Error(w, "Missing authorization header", http.StatusUnauthorized)
+func AuthMiddleware(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("Authorization")
+		if token == "" {
+			http.Error(w, "Authorization header is missing", http.StatusUnauthorized)
 			return
 		}
 
-		tokenStr := strings.Split(authHeader, " ")[1]
-		token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
-			return []byte("secret-key"), nil
-		})
-
-		if err != nil || !token.Valid {
+		userID, err := utils.ValidateToken(token[len("Bearer "):]) // Get the token without "Bearer "
+		if err != nil {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "user", token.Claims)
+		// Store user ID in context
+		ctx := context.WithValue(r.Context(), "userID", userID)
 		next.ServeHTTP(w, r.WithContext(ctx))
-	})
+	}
 }

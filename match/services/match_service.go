@@ -1,52 +1,55 @@
 package services
 
 import (
-	"context"
-	"time"
-
-	"driver-location-match/models"
-
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
 )
 
-type MatchingService struct {
-	db *mongo.Collection
-}
-
-func NewMatchingService(db *mongo.Database) *MatchingService {
-	return &MatchingService{db: db.Collection("drivers")}
-}
-
-func (s *MatchingService) FindNearestDrivers(coordinates []float64, radius float64) ([]models.Driver, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	filter := bson.M{
-		"location": bson.M{
-			"$near": bson.M{
-				"$geometry": bson.M{
-					"type":        "Point",
-					"coordinates": coordinates,
-				},
-				"$maxDistance": radius,
-			},
-		},
+// GetNearestDriverForUser retrieves the nearest driver for a given user ID.
+func GetNearestDriverForUser(userID, token string) (interface{}, error) {
+	// Simulate user location retrieval from your database or any source
+	userLocation := map[string]float64{
+		"latitude":  40.7128,  // Example latitude
+		"longitude": -74.0060, // Example longitude
 	}
 
-	cursor, err := s.db.Find(ctx, filter)
+	// Prepare the request to the location service
+	locationServiceURL := "http://localhost:8081/driver/nearest"
+	jsonData, err := json.Marshal(map[string]interface{}{
+		"type":        "Point",
+		"coordinates": []float64{userLocation["longitude"], userLocation["latitude"]},
+	})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to marshal location data: %w", err)
 	}
-	defer cursor.Close(ctx)
 
-	var drivers []models.Driver
-	for cursor.Next(ctx) {
-		var driver models.Driver
-		if err := cursor.Decode(&driver); err != nil {
-			return nil, err
-		}
-		drivers = append(drivers, driver)
+	req, err := http.NewRequest("POST", locationServiceURL+"/driver/nearest", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	return drivers, cursor.Err()
+
+	// Add Authorization header with Bearer token
+	req.Header.Set("Authorization", token) // Use the passed token
+	req.Header.Set("Content-Type", "application/json")
+
+	// Perform the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call location service: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to get nearest driver: %s", resp.Status)
+	}
+
+	var nearestDriver interface{}
+	if err := json.NewDecoder(resp.Body).Decode(&nearestDriver); err != nil {
+		return nil, fmt.Errorf("failed to decode response: %w", err)
+	}
+
+	return nearestDriver, nil
 }
