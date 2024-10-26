@@ -2,12 +2,13 @@ package models
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
-type Driver struct {
+type DriverLocation struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty"`
-	Location GeoJSONPoint       `bson:"location"`
+	Distance float64            `bson:"distance,omitempty"`
+	Location GeoJSON            `bson:"location"`
 }
 
-type GeoJSONPoint struct {
+type GeoJSON struct {
 	Type        string    `bson:"type"`
 	Coordinates []float64 `bson:"coordinates"`
 }

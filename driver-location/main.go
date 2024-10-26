@@ -1,31 +1,25 @@
 package main
 
 import (
-	"driver-location-matching/controllers"
-	"driver-location-matching/database"
-	"driver-location-matching/services"
-	"github.com/gorilla/mux"
+	"location-service/controllers"
+	"location-service/middleware"
+	"location-service/utils"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
-	//godotenv.Load(".env")
+	utils.ConnectDB() // Connect to MongoDB
 
-	db, err := database.Connect("mongodb://localhost:27017", "driver_location", "drivers")
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	}
+	r := mux.NewRouter()
 
-	service := services.NewDriverService(db)
-	service.EnsureIndexes()
-	controller := controllers.NewDriverController(service)
+	// Routes
+	r.HandleFunc("/auth", controllers.Authenticate).Methods("POST")
+	r.HandleFunc("/location", controllers.CreateLocation).Methods("POST")
+	r.HandleFunc("/driver/nearest", middleware.AuthMiddleware(controllers.GetNearestDriver)).Methods("POST")
 
-	router := mux.NewRouter()
-	//router.Use(middleware.AuthMiddleware(service))
-
-	router.HandleFunc("/import", controller.ImportDrivers).Methods("POST")
-	router.HandleFunc("/nearest", controller.FindNearestDrivers).Methods("GET")
-
-	log.Fatal(http.ListenAndServe(":8081", router))
+	log.Println("Location Service is running on port 8081")
+	log.Fatal(http.ListenAndServe(":8081", r))
 }
