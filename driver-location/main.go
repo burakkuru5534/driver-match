@@ -18,6 +18,7 @@ func main() {
 	// Routes
 	r.HandleFunc("/auth", controllers.Authenticate).Methods("POST")
 	r.HandleFunc("/location", controllers.CreateLocation).Methods("POST")
+	r.HandleFunc("/import", controllers.ImportDrivers).Methods("POST")
 	r.HandleFunc("/driver/nearest", middleware.AuthMiddleware(controllers.GetNearestDriver)).Methods("POST")
 
 	log.Println("Location Service is running on port 8081")

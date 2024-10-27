@@ -12,3 +12,7 @@ type GeoJSON struct {
 	Type        string    `bson:"type"`
 	Coordinates []float64 `bson:"coordinates"`
 }
+
+type FilePath struct {
+	Path string `bson:"path"`
+}
