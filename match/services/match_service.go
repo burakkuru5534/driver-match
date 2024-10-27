@@ -4,51 +4,42 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"match-service/models"
+	"match-service/utils"
 	"net/http"
 )
 
-// GetNearestDriverForUser retrieves the nearest driver for a given user ID.
-func GetNearestDriverForUser(userID, token string) (interface{}, error) {
-	// Simulate user location retrieval from your database or any source
-	userLocation := map[string]float64{
-		"latitude":  40.7128,  // Example latitude
-		"longitude": -74.0060, // Example longitude
-	}
-
-	// Prepare the request to the location service
-	locationServiceURL := "http://localhost:8081/driver/nearest"
-	jsonData, err := json.Marshal(map[string]interface{}{
-		"type":        "Point",
-		"coordinates": []float64{userLocation["longitude"], userLocation["latitude"]},
-	})
+// GetNearestDriver requests the nearest driver from the Location Service.
+func GetNearestDriver(userLocation models.GeoJSONPoint, token string) (models.Driver, error) {
+	url := "http://localhost:8081/driver/nearest"
+	requestBody, err := json.Marshal(userLocation)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal location data: %w", err)
+		return models.Driver{}, fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", locationServiceURL+"/driver/nearest", bytes.NewBuffer(jsonData))
+	req, err := http.NewRequest("POST", url, bytes.NewBuffer(requestBody))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		return models.Driver{}, fmt.Errorf("failed to create request: %w", err)
 	}
-
-	// Add Authorization header with Bearer token
-	req.Header.Set("Authorization", token) // Use the passed token
+	req.Header.Set("Authorization", token)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Perform the request
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	// Use circuit breaker to make the request
+	resp, err := utils.RequestWithCircuitBreaker(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call location service: %w", err)
+		// Fallback response if circuit is open or request fails
+		fmt.Println("Using fallback: No nearest driver available")
+		return models.Driver{}, fmt.Errorf("circuit breaker triggered or service unavailable: %w", err)
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("failed to get nearest driver: %s", resp.Status)
+		return models.Driver{}, fmt.Errorf("failed to get nearest driver, status code: %d", resp.StatusCode)
 	}
 
-	var nearestDriver interface{}
+	var nearestDriver models.Driver
 	if err := json.NewDecoder(resp.Body).Decode(&nearestDriver); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
+		return models.Driver{}, fmt.Errorf("failed to decode response: %w", err)
 	}
 
 	return nearestDriver, nil

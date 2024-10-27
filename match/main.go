@@ -10,7 +10,7 @@ import (
 func main() {
 
 	// Set up the router
-	http.HandleFunc("/match/nearest", middleware.AuthMiddleware(controllers.GetNearestDriver))
+	http.HandleFunc("/match/nearest", middleware.AuthMiddleware(controllers.GetNearestDriverController))
 
 	// Start the server
 	port := "8082" // Set your port in the .env file
