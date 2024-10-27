@@ -11,7 +11,7 @@ import (
 )
 
 func SaveLocation(location models.DriverLocation) error {
-	collection := utils.GetMongoCollection("locations")
+	collection := utils.GetMongoCollection("drivers")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
