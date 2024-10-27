@@ -32,7 +32,7 @@ func init() {
 }
 
 // RequestWithCircuitBreaker sends an HTTP request with the circuit breaker protection
-func RequestWithCircuitBreaker(req *http.Request) (*http.Response, error) {
+var RequestWithCircuitBreaker = func(req *http.Request) (*http.Response, error) {
 	// Use the circuit breaker to execute the HTTP request
 	result, err := cb.Execute(func() (interface{}, error) {
 		client := &http.Client{}

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-var jwtKey = []byte("secret_key")
+var jwtKey = []byte("secret_key") // Make sure this is consistent in both services
 
 func GenerateToken(username string) (string, error) {
 	claims := &jwt.StandardClaims{
@@ -16,10 +16,16 @@ func GenerateToken(username string) (string, error) {
 	return token.SignedString(jwtKey)
 }
 
-func ValidateToken(tokenString string) bool {
-	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+// Updated ValidateToken to return userID and error
+func ValidateToken(tokenString string) (string, error) {
+	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return jwtKey, nil
 	})
 
-	return token != nil && token.Valid
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		userID := claims["iss"].(string) // Using "iss" as username or ID
+		return userID, nil
+	}
+
+	return "", err
 }
