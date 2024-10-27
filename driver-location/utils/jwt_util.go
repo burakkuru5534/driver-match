@@ -5,27 +5,35 @@ import (
 	"time"
 )
 
-var jwtKey = []byte("secret_key") // Make sure this is consistent in both services
+var jwtSecret = []byte("your_secret_key") // Replace with your secret key
 
-func GenerateToken(username string) (string, error) {
-	claims := &jwt.StandardClaims{
-		ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
-		Issuer:    username,
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString(jwtKey)
+// User struct for demonstration purposes
+type User struct {
+	Username      string `json:"username"`
+	Authenticated bool   `json:"authenticated"`
 }
 
-// Updated ValidateToken to return userID and error
-func ValidateToken(tokenString string) (string, error) {
-	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return jwtKey, nil
-	})
-
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		userID := claims["iss"].(string) // Using "iss" as username or ID
-		return userID, nil
+// Generate JWT token
+func GenerateToken(user User) (string, error) {
+	claims := jwt.MapClaims{
+		"authenticated": user.Authenticated,
+		"exp":           time.Now().Add(time.Hour * 72).Unix(), // Token valid for 72 hours
 	}
 
-	return "", err
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString(jwtSecret)
+}
+
+// Validate JWT token
+func ValidateToken(tokenString string) (jwt.MapClaims, error) {
+	claims := jwt.MapClaims{}
+	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+		return jwtSecret, nil
+	})
+
+	if err != nil || !token.Valid {
+		return nil, err // Return nil claims if token is invalid
+	}
+
+	return claims, nil
 }
