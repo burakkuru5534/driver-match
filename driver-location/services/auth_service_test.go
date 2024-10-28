@@ -6,7 +6,10 @@ import (
 )
 
 func TestGenerateToken(t *testing.T) {
-	token, err := utils.GenerateToken("testUser")
+	token, err := utils.GenerateToken(utils.User{
+		Username:      "driver",
+		Authenticated: true,
+	})
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -17,7 +20,10 @@ func TestGenerateToken(t *testing.T) {
 }
 
 func TestValidateToken(t *testing.T) {
-	token, _ := utils.GenerateToken("driver")
+	token, _ := utils.GenerateToken(utils.User{
+		Username:      "driver",
+		Authenticated: true,
+	})
 	_, err := utils.ValidateToken(token)
 	if err != nil {
 		t.Errorf("Expected token to be valid")
