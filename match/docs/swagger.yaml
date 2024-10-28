@@ -1,0 +1,49 @@
+definitions:
+  models.Driver:
+    properties:
+      distance:
+        type: number
+      id:
+        type: string
+      location:
+        $ref: '#/definitions/models.GeoJSONPoint'
+    type: object
+  models.GeoJSONPoint:
+    properties:
+      coordinates:
+        items:
+          type: number
+        type: array
+      type:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /match/nearest:
+    post:
+      consumes:
+      - application/json
+      description: GetNearestDriverController gets the nearest location of the driver
+        from location service
+      parameters:
+      - description: models.GeoJSONPoint credentials
+        in: body
+        name: location
+        required: true
+        schema:
+          $ref: '#/definitions/models.GeoJSONPoint'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Driver'
+        "400":
+          description: Bad Request
+          schema: {}
+      summary: GetNearestDriverController Endpoint
+      tags:
+      - GetNearestDriverController
+swagger: "2.0"

@@ -7,6 +7,15 @@ import (
 	"net/http"
 )
 
+// @Summary GetNearestDriverController Endpoint
+// @Description GetNearestDriverController gets the nearest location of the driver from location service
+// @Tags GetNearestDriverController
+// @Accept  json
+// @Produce  json
+// @Param location body models.GeoJSONPoint true "models.GeoJSONPoint credentials"
+// @Success 200 {object} models.Driver
+// @Failure 400 {object} error
+// @Router /match/nearest [post]
 // GetNearestDriverController handles requests for the nearest driver.
 func GetNearestDriverController(w http.ResponseWriter, r *http.Request) {
 	// Parse user location from the request body

@@ -1,6 +1,7 @@
 package main
 
 import (
+	httpSwagger "github.com/swaggo/http-swagger"
 	"log"
 	controllers "match-service/contollers"
 	"match-service/middleware"
@@ -11,6 +12,7 @@ func main() {
 
 	// Set up the router
 	http.HandleFunc("/match/nearest", middleware.AuthMiddleware(controllers.GetNearestDriverController))
+	http.HandleFunc("/swagger/", httpSwagger.WrapHandler)
 
 	// Start the server
 	port := "8082" // Set your port in the .env file
