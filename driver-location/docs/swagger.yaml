@@ -1,0 +1,137 @@
+definitions:
+  controllers.User:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  models.DriverLocation:
+    properties:
+      distance:
+        type: number
+      id:
+        type: string
+      location:
+        $ref: '#/definitions/models.GeoJSON'
+    type: object
+  models.FilePath:
+    properties:
+      path:
+        type: string
+    type: object
+  models.GeoJSON:
+    properties:
+      coordinates:
+        items:
+          type: number
+        type: array
+      type:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /auth:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a JWT token
+      parameters:
+      - description: Credentials credentials
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/controllers.User'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema: {}
+      summary: Auth Endpoint
+      tags:
+      - Auth
+  /driver/nearest:
+    post:
+      consumes:
+      - application/json
+      description: GetNearestDriver  and returns the driver location and distance
+        of the driver
+      parameters:
+      - description: models.GeoJSON credentials
+        in: body
+        name: userLocation
+        required: true
+        schema:
+          $ref: '#/definitions/models.GeoJSON'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DriverLocation'
+        "400":
+          description: Bad Request
+          schema: {}
+      summary: GetNearestDriver Endpoint
+      tags:
+      - GetNearestDriver
+  /import:
+    post:
+      consumes:
+      - application/json
+      description: ImportDrivers get filepath and import the csv to mongodb
+      parameters:
+      - description: models.FilePath credentials
+        in: body
+        name: filePath
+        required: true
+        schema:
+          $ref: '#/definitions/models.FilePath'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.FilePath'
+        "400":
+          description: Bad Request
+          schema: {}
+      summary: ImportDrivers Endpoint
+      tags:
+      - ImportDrivers
+  /location:
+    post:
+      consumes:
+      - application/json
+      description: CreateLocation get location info and create new driver location
+        in db
+      parameters:
+      - description: models.DriverLocation credentials
+        in: body
+        name: location
+        required: true
+        schema:
+          $ref: '#/definitions/models.DriverLocation'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.DriverLocation'
+        "400":
+          description: Bad Request
+          schema: {}
+      summary: CreateLocation Endpoint
+      tags:
+      - CreateLocation
+swagger: "2.0"

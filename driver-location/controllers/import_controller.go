@@ -7,6 +7,15 @@ import (
 	"net/http"
 )
 
+// @Summary ImportDrivers Endpoint
+// @Description ImportDrivers get filepath and import the csv to mongodb
+// @Tags ImportDrivers
+// @Accept  json
+// @Produce  json
+// @Param filePath body models.FilePath true "models.FilePath credentials"
+// @Success 200 {object} models.FilePath
+// @Failure 400 {object} error
+// @Router /import [post]
 func ImportDrivers(w http.ResponseWriter, r *http.Request) {
 	var filePath models.FilePath
 	if err := json.NewDecoder(r.Body).Decode(&filePath); err != nil {

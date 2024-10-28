@@ -6,6 +6,15 @@ import (
 	"net/http"
 )
 
+// @Summary Auth Endpoint
+// @Description Authenticates a user and returns a JWT token
+// @Tags Auth
+// @Accept  json
+// @Produce  json
+// @Param user body User true "Credentials credentials"
+// @Success 200 {object} string
+// @Failure 400 {object} error
+// @Router /auth [post]
 func Authenticate(w http.ResponseWriter, r *http.Request) {
 	var creds services.Credentials
 	if err := json.NewDecoder(r.Body).Decode(&creds); err != nil {
@@ -20,4 +29,9 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	json.NewEncoder(w).Encode(map[string]string{"token": token})
+}
+
+type User struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }

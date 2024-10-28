@@ -7,6 +7,15 @@ import (
 	"net/http"
 )
 
+// @Summary GetNearestDriver Endpoint
+// @Description GetNearestDriver  and returns the driver location and distance of the driver
+// @Tags GetNearestDriver
+// @Accept  json
+// @Produce  json
+// @Param userLocation body models.GeoJSON true "models.GeoJSON credentials"
+// @Success 200 {object} models.DriverLocation
+// @Failure 400 {object} error
+// @Router /driver/nearest [post]
 func GetNearestDriver(w http.ResponseWriter, r *http.Request) {
 	var userLocation models.GeoJSON
 	if err := json.NewDecoder(r.Body).Decode(&userLocation); err != nil {
